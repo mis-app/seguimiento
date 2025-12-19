@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Alumnos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-users"></i> Registro de Alumnos</h1>
+            <p class="subtitle">Seguimiento sencillo con comentarios</p>
+        </header>
+
+        <div class="app-card">
+            <!-- Formulario para agregar alumno -->
+            <div class="form-section">
+                <h2><i class="fas fa-user-plus"></i> Nuevo Alumno</h2>
+                <div class="input-group">
+                    <div class="input-field">
+                        <input type="text" id="nombreAlumno" placeholder="Nombre del alumno" maxlength="50">
+                    </div>
+                    <div class="input-field">
+                        <textarea id="comentarioAlumno" placeholder="Comentarios..." rows="3" maxlength="300"></textarea>
+                    </div>
+			
+                    <div style="display:none;" class="checkbox-field">
+                        <input type="checkbox" id="completadoCheck">
+                        <label for="completadoCheck">
+                            <i class="fas fa-check-circle"></i> Marcado como completado
+                        </label>
+                    </div>
+			
+                    <button id="agregarBtn" class="btn-primary">
+                        <i class="fas fa-plus"></i> Agregar Alumno
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de alumnos -->
+            <div class="lista-section">
+                <div class="filtros-section">
+                    <h2><i class="fas fa-list"></i> Lista de Alumnos</h2>
+                    <div class="filtros">
+                        <button class="filtro-btn active" data-filtro="todos">Todos</button>
+                        <button class="filtro-btn" data-filtro="completados">Completados</button>
+                        <button class="filtro-btn" data-filtro="pendientes">Pendientes</button>
+                    </div>
+                </div>
+
+                <div class="contadores">
+                    <div class="contador-card">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <h3>Total</h3>
+                            <p id="totalAlumnos">0</p>
+                        </div>
+                    </div>
+                    <div class="contador-card">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3>Completados</h3>
+                            <p id="completadosAlumnos">0</p>
+                        </div>
+                    </div>
+                    <div class="contador-card">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h3>Pendientes</h3>
+                            <p id="pendientesAlumnos">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="listaAlumnos" class="lista-alumnos">
+                    <!-- Los alumnos se mostrarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><i class="fas fa-save"></i> Los datos se guardan automáticamente en tu navegador</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
