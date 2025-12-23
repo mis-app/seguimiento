@@ -25,17 +25,47 @@
                     <div class="input-field">
                         <textarea id="comentarioAlumno" placeholder="Comentarios..." rows="3" maxlength="300"></textarea>
                     </div>
-			
+            
                     <div style="display:none;" class="checkbox-field">
                         <input type="checkbox" id="completadoCheck">
                         <label for="completadoCheck">
                             <i class="fas fa-check-circle"></i> Marcado como completado
                         </label>
                     </div>
-			
+            
                     <button id="agregarBtn" class="btn-primary">
                         <i class="fas fa-plus"></i> Agregar Alumno
                     </button>
+                </div>
+            </div>
+
+            <!-- Controles de importación/exportación -->
+            <div class="form-section">
+                <h2><i class="fas fa-file-export"></i> Importar / Exportar Datos</h2>
+                <div class="import-export-controls">
+                    <div class="export-section">
+                        <h3><i class="fas fa-download"></i> Exportar a CSV</h3>
+                        <p>Descarga todos los alumnos en formato CSV para abrir en Excel</p>
+                        <button id="exportarBtn" class="btn-secondary">
+                            <i class="fas fa-file-csv"></i> Exportar Datos
+                        </button>
+                    </div>
+                    
+                    <div class="import-section">
+                        <h3><i class="fas fa-upload"></i> Importar desde CSV</h3>
+                        <p>Selecciona un archivo CSV para importar datos. Los datos existentes se conservarán.</p>
+                        <div class="file-input-group">
+                            <input type="file" id="importarInput" accept=".csv" style="display: none;">
+                            <label for="importarInput" class="btn-secondary file-input-label">
+                                <i class="fas fa-folder-open"></i> Seleccionar Archivo CSV
+                            </label>
+                            <span id="nombreArchivo" class="file-name">No se ha seleccionado ningún archivo</span>
+                        </div>
+                        <button id="importarBtn" class="btn-secondary" disabled>
+                            <i class="fas fa-file-import"></i> Importar Datos
+                        </button>
+                        <p class="import-note"><small>Nota: El archivo CSV debe tener columnas: nombre,comentario,completado</small></p>
+                    </div>
                 </div>
             </div>
 

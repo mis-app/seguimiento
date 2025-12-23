@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const comentarioInput = document.getElementById('comentarioAlumno');
     const completadoCheck = document.getElementById('completadoCheck');
     const agregarBtn = document.getElementById('agregarBtn');
+    const exportarBtn = document.getElementById('exportarBtn');
+    const importarInput = document.getElementById('importarInput');
+    const importarBtn = document.getElementById('importarBtn');
+    const nombreArchivo = document.getElementById('nombreArchivo');
     const listaAlumnos = document.getElementById('listaAlumnos');
     const totalAlumnos = document.getElementById('totalAlumnos');
     const completadosAlumnos = document.getElementById('completadosAlumnos');
@@ -13,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar alumnos desde localStorage
     let alumnos = JSON.parse(localStorage.getItem('alumnos')) || [];
     let filtroActual = 'todos';
+    let archivoSeleccionado = null;
     
     // Inicializar la aplicación
     actualizarContadores();
@@ -25,6 +30,24 @@ document.addEventListener('DOMContentLoaded', function() {
     nombreInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') agregarAlumno();
     });
+    
+    // Evento para exportar datos
+    exportarBtn.addEventListener('click', exportarCSV);
+    
+    // Eventos para importar datos
+    importarInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            archivoSeleccionado = e.target.files[0];
+            nombreArchivo.textContent = archivoSeleccionado.name;
+            importarBtn.disabled = false;
+        } else {
+            archivoSeleccionado = null;
+            nombreArchivo.textContent = 'No se ha seleccionado ningún archivo';
+            importarBtn.disabled = true;
+        }
+    });
+    
+    importarBtn.addEventListener('click', importarCSV);
     
     // Eventos para los filtros
     filtroBtns.forEach(btn => {
@@ -71,6 +94,192 @@ document.addEventListener('DOMContentLoaded', function() {
         renderizarAlumnos();
         mostrarNotificacion('Alumno agregado exitosamente', 'success');
         nombreInput.focus();
+    }
+    
+    // Función para exportar datos a CSV
+    function exportarCSV() {
+        if (alumnos.length === 0) {
+            mostrarNotificacion('No hay datos para exportar', 'error');
+            return;
+        }
+        
+        // Crear encabezados CSV
+        const headers = ['nombre', 'comentario', 'completado', 'fechaRegistro'];
+        
+        // Convertir datos a filas CSV
+        const filasCSV = alumnos.map(alumno => [
+            `"${alumno.nombre.replace(/"/g, '""')}"`,
+            `"${alumno.comentario.replace(/"/g, '""')}"`,
+            alumno.completado ? 'true' : 'false',
+            alumno.fechaRegistro
+        ]);
+        
+        // Combinar encabezados y filas
+        const contenidoCSV = [
+            headers.join(','),
+            ...filasCSV.map(fila => fila.join(','))
+        ].join('\n');
+        
+        // Crear blob y descargar
+        const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `alumnos_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        mostrarNotificacion(`Exportados ${alumnos.length} alumnos exitosamente`, 'success');
+    }
+    
+    // Función para importar datos desde CSV
+    function importarCSV() {
+        if (!archivoSeleccionado) {
+            mostrarNotificacion('Por favor, selecciona un archivo CSV primero', 'error');
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                const contenido = e.target.result;
+                const lineas = contenido.split('\n').filter(linea => linea.trim() !== '');
+                
+                if (lineas.length < 2) {
+                    mostrarNotificacion('El archivo CSV está vacío o tiene formato incorrecto', 'error');
+                    return;
+                }
+                
+                // Obtener encabezados
+                const headers = lineas[0].split(',').map(h => h.trim().replace(/^"(.*)"$/, '$1'));
+                
+                // Validar encabezados básicos
+                if (!headers.includes('nombre')) {
+                    mostrarNotificacion('El archivo CSV debe tener una columna "nombre"', 'error');
+                    return;
+                }
+                
+                let alumnosImportados = 0;
+                let alumnosDuplicados = 0;
+                
+                // Procesar cada línea (empezando desde la segunda)
+                for (let i = 1; i < lineas.length; i++) {
+                    const linea = lineas[i];
+                    const valores = parseCSVLine(linea);
+                    
+                    if (valores.length >= headers.length) {
+                        // Crear objeto alumno desde CSV
+                        const alumnoCSV = {};
+                        headers.forEach((header, index) => {
+                            if (index < valores.length) {
+                                let valor = valores[index].trim();
+                                // Remover comillas si existen
+                                valor = valor.replace(/^"(.*)"$/, '$1');
+                                alumnoCSV[header] = valor;
+                            }
+                        });
+                        
+                        // Validar y normalizar datos
+                        if (alumnoCSV.nombre && alumnoCSV.nombre.trim() !== '') {
+                            const nombreNormalizado = alumnoCSV.nombre.trim();
+                            
+                            // Verificar si ya existe (por nombre)
+                            const existe = alumnos.some(a => 
+                                a.nombre.toLowerCase() === nombreNormalizado.toLowerCase()
+                            );
+                            
+                            if (!existe) {
+                                const nuevoAlumno = {
+                                    id: Date.now() + i, // ID único
+                                    nombre: nombreNormalizado,
+                                    comentario: alumnoCSV.comentario || alumnoCSV.Comentario || '',
+                                    completado: alumnoCSV.completado === 'true' || 
+                                               alumnoCSV.completado === 'TRUE' || 
+                                               alumnoCSV.completado === '1' ||
+                                               alumnoCSV.Completado === 'true' ||
+                                               alumnoCSV.Completado === 'TRUE' ||
+                                               alumnoCSV.Completado === '1',
+                                    fechaRegistro: alumnoCSV.fechaRegistro || alumnoCSV.fecharegistro || new Date().toISOString()
+                                };
+                                
+                                alumnos.push(nuevoAlumno);
+                                alumnosImportados++;
+                            } else {
+                                alumnosDuplicados++;
+                            }
+                        }
+                    }
+                }
+                
+                if (alumnosImportados > 0) {
+                    guardarAlumnos();
+                    renderizarAlumnos();
+                    
+                    let mensaje = `Importados ${alumnosImportados} alumnos exitosamente`;
+                    if (alumnosDuplicados > 0) {
+                        mensaje += ` (${alumnosDuplicados} duplicados ignorados)`;
+                    }
+                    
+                    mostrarNotificacion(mensaje, 'success');
+                    
+                    // Limpiar selección de archivo
+                    importarInput.value = '';
+                    nombreArchivo.textContent = 'No se ha seleccionado ningún archivo';
+                    importarBtn.disabled = true;
+                    archivoSeleccionado = null;
+                } else {
+                    mostrarNotificacion('No se importaron alumnos nuevos (puede que ya existan todos)', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Error al importar CSV:', error);
+                mostrarNotificacion('Error al procesar el archivo CSV. Verifica el formato.', 'error');
+            }
+        };
+        
+        reader.onerror = function() {
+            mostrarNotificacion('Error al leer el archivo', 'error');
+        };
+        
+        reader.readAsText(archivoSeleccionado);
+    }
+    
+    // Función para parsear línea CSV (maneja comas dentro de comillas)
+    function parseCSVLine(linea) {
+        const valores = [];
+        let valorActual = '';
+        let dentroDeComillas = false;
+        
+        for (let i = 0; i < linea.length; i++) {
+            const char = linea[i];
+            const siguienteChar = i + 1 < linea.length ? linea[i + 1] : '';
+            
+            if (char === '"') {
+                if (dentroDeComillas && siguienteChar === '"') {
+                    // Comilla escapada
+                    valorActual += '"';
+                    i++; // Saltar siguiente comilla
+                } else {
+                    // Inicio/fin de comillas
+                    dentroDeComillas = !dentroDeComillas;
+                }
+            } else if (char === ',' && !dentroDeComillas) {
+                // Fin de valor
+                valores.push(valorActual);
+                valorActual = '';
+            } else {
+                valorActual += char;
+            }
+        }
+        
+        // Agregar último valor
+        valores.push(valorActual);
+        return valores;
     }
     
     // Función para renderizar la lista de alumnos
