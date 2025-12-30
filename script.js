@@ -335,28 +335,29 @@ document.addEventListener('DOMContentLoaded', function() {
             alumnoItem.className = `alumno-item ${alumno.completado ? 'completado' : 'pendiente'}`;
             alumnoItem.dataset.id = alumno.id;
             
-            alumnoItem.innerHTML = `
-                <div class="alumno-header">
-                    <div class="nombre-alumno" contenteditable="true" data-campo="nombre">
-                        ${escapeHTML(alumno.nombre)}
-                    </div>
-                    <div class="estado-badge ${alumno.completado ? 'estado-completado' : 'estado-pendiente'}" 
-                         data-id="${alumno.id}">
-                        <i class="fas ${alumno.completado ? 'fa-check' : 'fa-clock'}"></i>
-                        ${alumno.completado ? 'Completado' : 'Pendiente'}
-                    </div>
-                </div>
-                
-                <div class="comentario-alumno" contenteditable="true" data-campo="comentario">
-                    ${escapeHTML(alumno.comentario)}
-                </div>
-                
-                <div class="alumno-acciones">
-                    <button class="btn-eliminar eliminar-alumno" data-id="${alumno.id}">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                </div>
-            `;
+           // En la función renderizarAlumnos(), dentro del forEach, cambiar el HTML del alumnoItem:
+
+              alumnoItem.innerHTML = `
+                  <div class="nombre-alumno" contenteditable="true" data-campo="nombre">
+                      ${escapeHTML(alumno.nombre)}
+                  </div>
+
+                  <div class="comentario-alumno" contenteditable="true" data-campo="comentario">
+                      ${escapeHTML(alumno.comentario)}
+                  </div>
+
+                  <div class="estado-badge ${alumno.completado ? 'estado-completado' : 'estado-pendiente'}" 
+                       data-id="${alumno.id}">
+                      <i class="fas ${alumno.completado ? 'fa-check' : 'fa-clock'}"></i>
+                      ${alumno.completado ? 'Completado' : 'Pendiente'}
+                  </div>
+
+                  <div class="alumno-acciones">
+                      <button class="btn-eliminar eliminar-alumno" data-id="${alumno.id}">
+                          <i class="fas fa-trash"></i> Eliminar
+                      </button>
+                  </div>
+              `;
             
             listaAlumnos.appendChild(alumnoItem);
         });
